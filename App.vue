@@ -33,4 +33,14 @@
   display: inline-block;
   margin-bottom: 10px;
 }
+
+*, *::after, *::before {
+  box-sizing: border-box;
+  font-size: 15px;
+}
+
+body {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+}
 </style>

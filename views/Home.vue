@@ -55,6 +55,7 @@ export default {
       deep: true
     }
   },
+  //最初はいらないエラーになる！
   mounted() {
     this.watchData = JSON.parse(localStorage.getItem('watchData'));
   },
