@@ -6,7 +6,7 @@
       <h3>日付</h3>
       <p>
         <span class="changeButton" @click="prevDay">&lt;</span>
-        {{ watchData.year }}年{{ watchData.month }}月{{ watchData.day }}日
+        {{ watchData.year }}年{{ watchData.month }}月{{ watchData.date }}日
         <span class="changeButton" @click="nextDay">&gt;</span>
       </p>
       <hr>
@@ -18,12 +18,12 @@
       <hr>
 
       <h3>支出</h3>
-      <input type="number" id="expense" v-model="watchData.expense">
+      <input type="number" id="payment" v-model="watchData.payment">
       <span>円</span>
       <hr>
 
       <h3>日記</h3>
-      <textarea name="diary" id="" cols="50" rows="10"></textarea>
+      <textarea name="diary" id="" cols="50" rows="10" v-model="watchData.diary"></textarea>
     </div>
     <div class="buttonArea">
       <button @click="dataRequest">記録する</button>
@@ -32,6 +32,8 @@
 </template>
 
 <script>
+import axios from '../axios-firestore';
+
 const today = new Date();
 
 export default {
@@ -40,9 +42,10 @@ export default {
       watchData: {
         year: today.getFullYear(),
         month: today.getMonth() + 1,
-        day: today.getDate(),
+        date: today.getDate(),
         category: "食費",
-        expense: 0,
+        payment: 0,
+        diary: "",
       },
       categories: ["食費", "日用品", "美容品", "交際費", "交通費", "その他"],
     }
@@ -61,16 +64,16 @@ export default {
   },
   methods: {
     prevDay() {
-      this.watchData.day --;
+      this.watchData.date --;
       if(this.watchData.month == 3 || this.watchData.month == 5 || this.watchData.month == 7 || this.watchData.month == 10 || this.watchData.month == 12) {
-        if(this.watchData.day < 1) {
+        if(this.watchData.date < 1) {
           this.watchData.month --;
-          this.watchData.day = 30;
+          this.watchData.date = 30;
         }
       } else {
-        if(this.watchData.day < 1) {
+        if(this.watchData.date < 1) {
           this.watchData.month --;
-          this.watchData.day = 31;
+          this.watchData.date = 31;
         }
       }
       if(this.watchData.month < 1) {
@@ -79,16 +82,16 @@ export default {
       }
     },
     nextDay() {
-      this.watchData.day ++;
+      this.watchData.date ++;
       if(this.watchData.month == 2 || this.watchData.month == 4 || this.watchData.month == 6 || this.watchData.month == 9 || this.watchData.month == 11) {
-        if(this.watchData.day > 30) {
+        if(this.watchData.date > 30) {
           this.watchData.month ++;
-          this.watchData.day = 1;
+          this.watchData.date = 1;
         }
       } else {
-        if(this.watchData.day > 31) {
+        if(this.watchData.date > 31) {
           this.watchData.month ++;
-          this.watchData.day = 1;
+          this.watchData.date = 1;
         }
       }
       if(this.watchData.month > 12) {
@@ -97,7 +100,23 @@ export default {
       }
     },
     dataRequest() {
-      alert('保存されました')
+      alert('保存されました');
+      axios.post('/total', {
+        fields: {
+          date: {
+            stringify: this.watchData.date
+          },
+          category: {
+            stringify: this.watchData.category
+          },
+          payment: {
+            stringify: this.watchData.payment
+          },
+          diary: {
+            stringify: this.watchData.diary
+          }
+        }
+      });
     }
   }
 }
