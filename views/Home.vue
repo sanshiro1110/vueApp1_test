@@ -101,21 +101,31 @@ export default {
     },
     dataRequest() {
       alert('保存されました');
+      //日付が同じだった場合は金額を追加して更新したい
       axios.post('/total', {
         fields: {
+          year: {
+            doubleValue: this.watchData.year
+          },
+          month: {
+            doubleValue: this.watchData.month
+          },
           date: {
-            stringify: this.watchData.date
+            doubleValue: this.watchData.date
           },
           category: {
-            stringify: this.watchData.category
+            stringValue: this.watchData.category
           },
           payment: {
-            stringify: this.watchData.payment
+            doubleValue: this.watchData.payment
           },
           diary: {
-            stringify: this.watchData.diary
+            stringValue: this.watchData.diary
           }
         }
+      })
+      .then(request => {
+        console.log(request);
       });
     }
   }

@@ -1,15 +1,16 @@
 <template>
   <div id="app">
-    <TotalPayment></TotalPayment>
+    <div class="monthTotal">
+      <h3>
+        今月の支出合計<br>
+        {{ this.monthTotal }}円
+      </h3>
+    </div>
   </div>
 </template>
 
 <script>
-import TotalPayment from './TotalPayment';
 
 export default {
-  components: {
-    TotalPayment,
-  }
 }
 </script>

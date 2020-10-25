@@ -175,6 +175,7 @@ export default {
         calendarList.forEach(td => {
           if(td.className == 'today') {
             td.style.fontWeight = 'bold';
+            td.style.backgroundColor = '#eee';
           }
           if(td.className == 'disabled') {
             td.style.opacity = '0.5';
