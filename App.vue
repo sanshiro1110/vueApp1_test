@@ -1,8 +1,10 @@
 <template>
   <div id="app">
-    <router-link to="./" class="navLink">入力</router-link>
-    <router-link to="./calendar" class="navLink">カレンダー</router-link>
-    <router-link to="./report" class="navLink">レポート</router-link>
+    <div class="routerLink">
+      <router-link to="./" class="navLink">入力</router-link>
+      <router-link to="./calendar" class="navLink">カレンダー</router-link>
+      <router-link to="./report" class="navLink">レポート</router-link>
+    </div>
     <router-view></router-view>
   </div>
 </template>
@@ -24,10 +26,11 @@
 }
 
 .navLink {
-  margin-right: 5px;
+  padding: 5px;
+  margin-right: 10px;
   text-decoration: none;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 10px;
   background-color: #ccc;
   color: #000;
   display: inline-block;
@@ -42,5 +45,9 @@
 body {
   font-family: 'Courier New', monospace;
   font-size: 14px;
+}
+
+.routerLink {
+  margin-bottom: 30px;
 }
 </style>

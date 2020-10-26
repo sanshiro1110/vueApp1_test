@@ -32,7 +32,9 @@
 </template>
 
 <script>
-import axios from '../axios-firestore';
+// import axios from '../axios-firestore';
+import * as firebase from 'firebase';
+
 
 const today = new Date();
 
@@ -59,9 +61,9 @@ export default {
     }
   },
   //最初はいらないエラーになる！
-  mounted() {
-    this.watchData = JSON.parse(localStorage.getItem('watchData'));
-  },
+  // mounted() {
+  //   this.watchData = JSON.parse(localStorage.getItem('watchData'));
+  // },
   methods: {
     prevDay() {
       this.watchData.date --;
@@ -102,30 +104,17 @@ export default {
     dataRequest() {
       alert('保存されました');
       //日付が同じだった場合は金額を追加して更新したい
-      axios.post('/total', {
-        fields: {
-          year: {
-            doubleValue: this.watchData.year
-          },
-          month: {
-            doubleValue: this.watchData.month
-          },
-          date: {
-            doubleValue: this.watchData.date
-          },
-          category: {
-            stringValue: this.watchData.category
-          },
-          payment: {
-            doubleValue: this.watchData.payment
-          },
-          diary: {
-            stringValue: this.watchData.diary
-          }
-        }
+      const db = firebase.firestore();
+      db.collection('total').add({
+        year: this.watchData.year,
+        month: this.watchData.month,
+        date: this.watchData.date,
+        category: this.watchData.category,
+        payment: parseInt(this.watchData.payment),
+        diary: this.watchData.diary
       })
-      .then(request => {
-        console.log(request);
+      .then(function(docRef) {
+          console.log("Document written with ID: ", docRef.id);
       });
     }
   }
