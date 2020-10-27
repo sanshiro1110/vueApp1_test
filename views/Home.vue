@@ -6,24 +6,24 @@
       <h3>日付</h3>
       <p>
         <span class="changeButton" @click="prevDay">&lt;</span>
-        {{ watchData.year }}年{{ watchData.month }}月{{ watchData.date }}日
+        {{ inputData.year }}年{{ inputData.month }}月{{ inputData.date }}日
         <span class="changeButton" @click="nextDay">&gt;</span>
       </p>
       <hr>
 
       <h3>カテゴリー</h3>
-      <select id="category" v-model="watchData.category">
+      <select id="category" v-model="inputData.category">
         <option v-for="category in categories" :key="category">{{ category }}</option>
       </select>
       <hr>
 
-      <h3>支出</h3>
-      <input type="number" id="payment" v-model="watchData.payment">
+      <h3>支出額</h3>
+      <input type="number" id="payment" v-model="inputData.payment">
       <span>円</span>
       <hr>
 
       <h3>日記</h3>
-      <textarea name="diary" id="" cols="50" rows="10" v-model="watchData.diary"></textarea>
+      <textarea name="diary" id="" cols="50" rows="10" v-model="inputData.diary"></textarea>
     </div>
     <div class="buttonArea">
       <button @click="dataRequest">記録する</button>
@@ -32,16 +32,14 @@
 </template>
 
 <script>
-// import axios from '../axios-firestore';
 import * as firebase from 'firebase';
-
 
 const today = new Date();
 
 export default {
   data() {
     return {
-      watchData: {
+      inputData: {
         year: today.getFullYear(),
         month: today.getMonth() + 1,
         date: today.getDate(),
@@ -53,52 +51,52 @@ export default {
     }
   },
   watch: {
-    watchData: {
+    inputData: {
       handler() {
-        localStorage.setItem('watchData', JSON.stringify(this.watchData));
+        localStorage.setItem('inputData', JSON.stringify(this.inputData));
       },
       deep: true
     }
   },
   //最初はいらないエラーになる！
   // mounted() {
-  //   this.watchData = JSON.parse(localStorage.getItem('watchData'));
+  //   this.inputData = JSON.parse(localStorage.getItem('inputData'));
   // },
   methods: {
     prevDay() {
-      this.watchData.date --;
-      if(this.watchData.month == 3 || this.watchData.month == 5 || this.watchData.month == 7 || this.watchData.month == 10 || this.watchData.month == 12) {
-        if(this.watchData.date < 1) {
-          this.watchData.month --;
-          this.watchData.date = 30;
+      this.inputData.date --;
+      if(this.inputData.month == 3 || this.inputData.month == 5 || this.inputData.month == 7 || this.inputData.month == 10 || this.inputData.month == 12) {
+        if(this.inputData.date < 1) {
+          this.inputData.month --;
+          this.inputData.date = 30;
         }
       } else {
-        if(this.watchData.date < 1) {
-          this.watchData.month --;
-          this.watchData.date = 31;
+        if(this.inputData.date < 1) {
+          this.inputData.month --;
+          this.inputData.date = 31;
         }
       }
-      if(this.watchData.month < 1) {
-        this.watchData.month = 12;
-        this.watchData.year --;
+      if(this.inputData.month < 1) {
+        this.inputData.month = 12;
+        this.inputData.year --;
       }
     },
     nextDay() {
-      this.watchData.date ++;
-      if(this.watchData.month == 2 || this.watchData.month == 4 || this.watchData.month == 6 || this.watchData.month == 9 || this.watchData.month == 11) {
-        if(this.watchData.date > 30) {
-          this.watchData.month ++;
-          this.watchData.date = 1;
+      this.inputData.date ++;
+      if(this.inputData.month == 2 || this.inputData.month == 4 || this.inputData.month == 6 || this.inputData.month == 9 || this.inputData.month == 11) {
+        if(this.inputData.date > 30) {
+          this.inputData.month ++;
+          this.inputData.date = 1;
         }
       } else {
-        if(this.watchData.date > 31) {
-          this.watchData.month ++;
-          this.watchData.date = 1;
+        if(this.inputData.date > 31) {
+          this.inputData.month ++;
+          this.inputData.date = 1;
         }
       }
-      if(this.watchData.month > 12) {
-        this.watchData.month = 1;
-        this.watchData.year ++;
+      if(this.inputData.month > 12) {
+        this.inputData.month = 1;
+        this.inputData.year ++;
       }
     },
     dataRequest() {
@@ -106,17 +104,64 @@ export default {
       //日付が同じだった場合は金額を追加して更新したい
       const db = firebase.firestore();
       db.collection('total').add({
-        year: this.watchData.year,
-        month: this.watchData.month,
-        date: this.watchData.date,
-        category: this.watchData.category,
-        payment: parseInt(this.watchData.payment),
-        diary: this.watchData.diary
+        year: this.inputData.year,
+        month: this.inputData.month,
+        date: this.inputData.date,
+        category: this.inputData.category,
+        payment: parseInt(this.inputData.payment),
+        diary: this.inputData.diary
       })
-      .then(function(docRef) {
-          console.log("Document written with ID: ", docRef.id);
-      });
+      // .then(function(docRef) {
+      //   console.log(docRef);
+      // });
+
+      this.inputData.category = "食費";
+      this.inputData.payment = 0;
+      this.inputData.diary = "";
     }
+  },
+  created() {
+    const db = firebase.firestore();
+    const today = new Date();
+    const inputData = {
+      year: today.getFullYear(),
+      month: today.getMonth() + 1,
+      date: today.getDate(),
+      monthTotal: 0,
+      categoryPayments: {
+        food: 0,
+        daily: 0,
+        cosme: 0,
+        entertainment: 0,
+        transportation: 0,
+        others: 0
+      }
+    }
+
+    db.collection('total')
+    .where("month", "==", inputData.month)
+    .orderBy("date", "desc")
+    .get()
+    .then(querySnapshot => {
+      querySnapshot.forEach(function(doc) {
+        inputData.monthTotal += doc.data().payment;
+        if(doc.data().category == "食費") {
+          inputData.categoryPayments.food += doc.data().payment;
+        } else if(doc.data().category == "日用品") {
+          inputData.categoryPayments.daily += doc.data().payment;
+        } else if(doc.data().category == "美容品") {
+          inputData.categoryPayments.cosme += doc.data().payment;
+        } else if(doc.data().category == "交際費") {
+          inputData.categoryPayments.entertainment += doc.data().payment;
+        } else if(doc.data().category == "交通費") {
+          inputData.categoryPayments.transportation += doc.data().payment;
+        } else if(doc.data().category == "その他") {
+          inputData.categoryPayments.others += doc.data().payment;
+        }
+      });
+
+      this.$store.dispatch('getInputData', inputData);
+    });
   }
 }
 </script>

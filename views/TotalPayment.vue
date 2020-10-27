@@ -3,8 +3,8 @@
     <div class="monthTotal">
       <span class="prevMonth" @click="prevMonth">前の月</span>
       <h3>
-        {{ this.month }}月の支出合計<br>
-        {{ this.monthTotal }}円
+        {{ this.inputData.month }}月の支出合計<br>
+        {{ this.inputData.monthTotal }}円
       </h3>
       <span class="nextMonth" @click="nextMonth">次の月</span>
     </div>
@@ -13,12 +13,12 @@
         内訳
       </h3>
       <ul>
-        <li>食費: {{ categoryPayments.food }}円</li>
-        <li>日用品: {{ categoryPayments.daily }}円</li>
-        <li>美容品: {{ categoryPayments.cosme }}円</li>
-        <li>交際費: {{ categoryPayments.entertainment }}円</li>
-        <li>交通費: {{ categoryPayments.transportation }}円</li>
-        <li>その他: {{ categoryPayments.others }}円</li>
+        <li>食費: {{ inputData.categoryPayments.food }}円</li>
+        <li>日用品: {{ inputData.categoryPayments.daily }}円</li>
+        <li>美容品: {{ inputData.categoryPayments.cosme }}円</li>
+        <li>交際費: {{ inputData.categoryPayments.entertainment }}円</li>
+        <li>交通費: {{ inputData.categoryPayments.transportation }}円</li>
+        <li>その他: {{ inputData.categoryPayments.others }}円</li>
       </ul>
     </div>
     <ul class="totalPayment">
@@ -30,7 +30,7 @@
       </li>
     </ul>
     <hr>
-    <ul>
+    <ul id="datePaymentLists">
       <li v-for="ary in arry" :key="ary.id">
         <ul class="totalPayment">
           <li class="date">{{ ary.month }}月{{ ary.date}}日</li>
@@ -101,36 +101,30 @@ ul {
 
 <script>
 import * as firebase from 'firebase';
-
 const today = new Date();
+
 
 export default {
   data() {
     return {
-      month: today.getMonth() + 1,
-      categoryPayments: {
-        food: 0,
-        daily: 0,
-        cosme: 0,
-        entertainment: 0,
-        transportation: 0,
-        others: 0,
+      inputData: {
+        year: today.getFullYear(),
+        month: today.getMonth() + 1,
+        date: today.getDate(),
+        monthTotal: 0,
+        categoryPayments: {
+          food: 0,
+          daily: 0,
+          cosme: 0,
+          entertainment: 0,
+          transportation: 0,
+          others: 0,
+        },
       },
       arry: [],
-      monthTotal: 0,
     }
   },
-  computed: {
-    // reverseArrys() {
-    //   return this.arry.slice().reverse();
-    // },
-    // updateTotalPayment() {
-    //   return this.monthTotal += this.reverseArrys[0].fields.payment.doubleValue;
-    // }
-  },
-  created() {
-    const db = firebase.firestore();
-    const list = [];
+    created() {
     let totalPayment = 0;
     let number = 0;
     const categoryPayments = {
@@ -141,12 +135,16 @@ export default {
       transportation: 0,
       others: 0,
     };
+    const list = [];
 
+    const db = firebase.firestore();
     db.collection('total')
-    .where("month", "==", this.month)
+    .where("month", "==", this.inputData.month)
+    .orderBy("date", "desc")
     .get()
     .then(querySnapshot => {
       querySnapshot.forEach(function(doc) {
+
         number ++;
         list.push({
           id: number,
@@ -168,14 +166,21 @@ export default {
         }
       });
       this.arry = list;
-      this.monthTotal = totalPayment;
-      this.categoryPayments = categoryPayments;
+      this.inputData.monthTotal = totalPayment;
+      this.inputData.categoryPayments = categoryPayments;
+
+      this.$store.dispatch('getInputData', this.inputData);
+
       console.log(this.arry);
     });
   },
   methods: {
     prevMonth() {
-      this.month --;
+      this.inputData.month --;
+      if(this.inputData.month < 1) {
+        this.inputData.year --;
+        this.inputData.month = 12;
+      }
       const db = firebase.firestore();
       const list = [];
       let totalPayment = 0;
@@ -188,9 +193,9 @@ export default {
         transportation: 0,
         others: 0,
       };
-
       db.collection('total')
-      .where("month", "==", this.month)
+      .where("month", "==", this.inputData.month)
+      .orderBy("date", "desc")
       .get()
       .then(querySnapshot => {
         querySnapshot.forEach(function(doc) {
@@ -215,13 +220,18 @@ export default {
           }
         });
         this.arry = list;
-        this.monthTotal = totalPayment;
-        this.categoryPayments = categoryPayments;
+        this.inputData.monthTotal = totalPayment;
+        this.inputData.categoryPayments = categoryPayments;
+        this.$store.dispatch('getInputData', this.inputData);
         console.log(this.arry);
       });
     },
     nextMonth() {
-      this.month ++;
+      this.inputData.month ++;
+      if(this.inputData.month > 12) {
+        this.inputData.year ++;
+        this.inputData.month = 1;
+      }
       const db = firebase.firestore();
       const list = [];
       let totalPayment = 0;
@@ -236,7 +246,8 @@ export default {
       };
 
       db.collection('total')
-      .where("month", "==", this.month)
+      .where("month", "==", this.inputData.month)
+      .orderBy("date", "desc")
       .get()
       .then(querySnapshot => {
         querySnapshot.forEach(function(doc) {
@@ -261,11 +272,12 @@ export default {
           }
         });
         this.arry = list;
-        this.monthTotal = totalPayment;
-        this.categoryPayments = categoryPayments;
+        this.inputData.monthTotal = totalPayment;
+        this.inputData.categoryPayments = categoryPayments;
+        this.$store.dispatch('getInputData', this.inputData);
         console.log(this.arry);
       });
     },
-  }
+  },
 }
 </script>

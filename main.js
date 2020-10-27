@@ -4,6 +4,7 @@ import router from "./router.js"
 import * as firebase from 'firebase';
 import Chartkick from 'vue-chartkick';
 import Chart from 'chart.js';
+import store from './store/store';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAS5O9-MoyhNJiy1xhbujIEcAsokXPWIOY",
@@ -23,6 +24,7 @@ Vue.config.productionTip = false;
 
 new Vue({
   router,
+  store,
   render: h => h(App),
 }).$mount('#app')
 
