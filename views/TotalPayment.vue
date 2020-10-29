@@ -3,8 +3,8 @@
     <div class="monthTotal">
       <span class="prevMonth" @click="prevMonth">前の月</span>
       <h3>
-        {{ this.inputData.month }}月の支出合計<br>
-        {{ this.inputData.monthTotal }}円
+        {{ monthGet }}月の支出合計<br>
+        {{ monthTotalGet }}円
       </h3>
       <span class="nextMonth" @click="nextMonth">次の月</span>
     </div>
@@ -13,12 +13,12 @@
         内訳
       </h3>
       <ul>
-        <li>食費: {{ inputData.categoryPayments.food }}円</li>
-        <li>日用品: {{ inputData.categoryPayments.daily }}円</li>
-        <li>美容品: {{ inputData.categoryPayments.cosme }}円</li>
-        <li>交際費: {{ inputData.categoryPayments.entertainment }}円</li>
-        <li>交通費: {{ inputData.categoryPayments.transportation }}円</li>
-        <li>その他: {{ inputData.categoryPayments.others }}円</li>
+        <li>食費: {{ foodPaymentGet }}円</li>
+        <li>日用品: {{ dailyPaymentGet }}円</li>
+        <li>美容品: {{ cosmePaymentGet }}円</li>
+        <li>交際費: {{ entertainmentPaymentGet }}円</li>
+        <li>交通費: {{ transportationPaymentGet }}円</li>
+        <li>その他: {{ othersPaymentGet }}円</li>
       </ul>
     </div>
     <ul class="totalPayment">
@@ -30,19 +30,22 @@
       </li>
     </ul>
     <hr>
-    <ul id="datePaymentLists">
-      <li v-for="ary in arry" :key="ary.id">
-        <ul class="totalPayment">
-          <li class="date">{{ ary.month }}月{{ ary.date}}日</li>
-          <li class="dateTotal">{{ ary.payment}}円</li>
-        </ul>
-        <hr>
-      </li>
-    </ul>
+    <div v-for="(ary, index) in listGet" :key="ary.id" class="datePaymentList">
+      <ul class="totalPayment" id="totalPaymentList">
+        <li>{{ ary.month }}月{{ ary.date}}日</li>
+        <li>{{ ary.payment}}円</li>
+      </ul>
+      <span class="deleteList" id="deleteList" @click="deleteList(index)">[ x ]</span>
+      <hr>
+    </div>
   </div>
 </template>
 
 <style scoped>
+hr {
+  margin: 0;
+}
+
 .totalPayment_container {
   width: 700px;
   margin: 0 auto;
@@ -55,9 +58,10 @@ ul {
 
 .totalPayment {
   width: 500px;
-  margin: 10px auto;
+  margin: 0px auto;
   display: flex;
   justify-content: space-between;
+  padding: 10px 0;
 }
 
 .totalPayment li {
@@ -97,186 +101,77 @@ ul {
   border-radius: 10px;
   padding: 10px;
 }
+
+.datePaymentList {
+  position: relative;
+}
+
+.deleteList {
+  display: block;
+  color: #66ccff;
+  position: absolute;
+  top: 50%;
+  right: 30px;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
 </style>
 
 <script>
-import * as firebase from 'firebase';
-const today = new Date();
-
-
 export default {
-  data() {
-    return {
-      inputData: {
-        year: today.getFullYear(),
-        month: today.getMonth() + 1,
-        date: today.getDate(),
-        monthTotal: 0,
-        categoryPayments: {
-          food: 0,
-          daily: 0,
-          cosme: 0,
-          entertainment: 0,
-          transportation: 0,
-          others: 0,
-        },
-      },
-      arry: [],
-    }
-  },
-    created() {
-    let totalPayment = 0;
-    let number = 0;
-    const categoryPayments = {
-      food: 0,
-      daily: 0,
-      cosme: 0,
-      entertainment: 0,
-      transportation: 0,
-      others: 0,
-    };
-    const list = [];
-
-    const db = firebase.firestore();
-    db.collection('total')
-    .where("month", "==", this.inputData.month)
-    .orderBy("date", "desc")
-    .get()
-    .then(querySnapshot => {
-      querySnapshot.forEach(function(doc) {
-
-        number ++;
-        list.push({
-          id: number,
-          ...doc.data()
-        });
-        totalPayment += doc.data().payment;
-        if(doc.data().category == "食費") {
-          categoryPayments.food += doc.data().payment;
-        } else if(doc.data().category == "日用品") {
-          categoryPayments.daily += doc.data().payment;
-        } else if(doc.data().category == "美容品") {
-          categoryPayments.cosme += doc.data().payment;
-        } else if(doc.data().category == "交際費") {
-          categoryPayments.entertainment += doc.data().payment;
-        } else if(doc.data().category == "交通費") {
-          categoryPayments.transportation += doc.data().payment;
-        } else if(doc.data().category == "その他") {
-          categoryPayments.others += doc.data().payment;
-        }
-      });
-      this.arry = list;
-      this.inputData.monthTotal = totalPayment;
-      this.inputData.categoryPayments = categoryPayments;
-
-      this.$store.dispatch('getInputData', this.inputData);
-
-      console.log(this.arry);
-    });
+  computed: {
+    yearGet() {
+      return this.$store.state.inputData.year;
+    },
+    monthGet() {
+      return this.$store.state.inputData.month;
+    },
+    dateGet() {
+      return this.$store.state.inputData.date;
+    },
+    monthTotalGet() {
+      return this.$store.state.inputData.monthTotal;
+    },
+    numberGet() {
+      return this.$store.state.inputData.number;
+    },
+    listGet() {
+      return this.$store.state.inputData.list;
+    },
+    foodPaymentGet() {
+      return this.$store.state.inputData.categoryPayments.food;
+    },
+    dailyPaymentGet() {
+      return this.$store.state.inputData.categoryPayments.daily;
+    },
+    cosmePaymentGet() {
+      return this.$store.state.inputData.categoryPayments.cosme;
+    },
+    entertainmentPaymentGet() {
+      return this.$store.state.inputData.categoryPayments.entertainment;
+    },
+    transportationPaymentGet() {
+      return this.$store.state.inputData.categoryPayments.transportation;
+    },
+    othersPaymentGet() {
+      return this.$store.state.inputData.categoryPayments.others;
+    },
   },
   methods: {
-    prevMonth() {
-      this.inputData.month --;
-      if(this.inputData.month < 1) {
-        this.inputData.year --;
-        this.inputData.month = 12;
+    deleteList(index) {
+      if(confirm("本当に削除しますか")) {
+        this.arry.splice(index, 1);
       }
-      const db = firebase.firestore();
-      const list = [];
-      let totalPayment = 0;
-      let number = 0;
-      const categoryPayments = {
-        food: 0,
-        daily: 0,
-        cosme: 0,
-        entertainment: 0,
-        transportation: 0,
-        others: 0,
-      };
-      db.collection('total')
-      .where("month", "==", this.inputData.month)
-      .orderBy("date", "desc")
-      .get()
-      .then(querySnapshot => {
-        querySnapshot.forEach(function(doc) {
-          number ++;
-          list.push({
-            id: number,
-            ...doc.data()
-          });
-          totalPayment += doc.data().payment;
-          if(doc.data().category == "食費") {
-            categoryPayments.food += doc.data().payment;
-          } else if(doc.data().category == "日用品") {
-            categoryPayments.daily += doc.data().payment;
-          } else if(doc.data().category == "美容品") {
-            categoryPayments.cosme += doc.data().payment;
-          } else if(doc.data().category == "交際費") {
-            categoryPayments.entertainment += doc.data().payment;
-          } else if(doc.data().category == "交通費") {
-            categoryPayments.transportation += doc.data().payment;
-          } else if(doc.data().category == "その他") {
-            categoryPayments.others += doc.data().payment;
-          }
-        });
-        this.arry = list;
-        this.inputData.monthTotal = totalPayment;
-        this.inputData.categoryPayments = categoryPayments;
-        this.$store.dispatch('getInputData', this.inputData);
-        console.log(this.arry);
-      });
+    },
+    prevMonth() {
+      this.$store.dispatch('prevMonth');
+      this.$store.dispatch('getInputData');
+      this.$store.commit('createCalendar');
     },
     nextMonth() {
-      this.inputData.month ++;
-      if(this.inputData.month > 12) {
-        this.inputData.year ++;
-        this.inputData.month = 1;
-      }
-      const db = firebase.firestore();
-      const list = [];
-      let totalPayment = 0;
-      let number = 0;
-      const categoryPayments = {
-        food: 0,
-        daily: 0,
-        cosme: 0,
-        entertainment: 0,
-        transportation: 0,
-        others: 0,
-      };
-
-      db.collection('total')
-      .where("month", "==", this.inputData.month)
-      .orderBy("date", "desc")
-      .get()
-      .then(querySnapshot => {
-        querySnapshot.forEach(function(doc) {
-          number ++;
-          list.push({
-            id: number,
-            ...doc.data()
-          });
-          totalPayment += doc.data().payment;
-          if(doc.data().category == "食費") {
-            categoryPayments.food += doc.data().payment;
-          } else if(doc.data().category == "日用品") {
-            categoryPayments.daily += doc.data().payment;
-          } else if(doc.data().category == "美容品") {
-            categoryPayments.cosme += doc.data().payment;
-          } else if(doc.data().category == "交際費") {
-            categoryPayments.entertainment += doc.data().payment;
-          } else if(doc.data().category == "交通費") {
-            categoryPayments.transportation += doc.data().payment;
-          } else if(doc.data().category == "その他") {
-            categoryPayments.others += doc.data().payment;
-          }
-        });
-        this.arry = list;
-        this.inputData.monthTotal = totalPayment;
-        this.inputData.categoryPayments = categoryPayments;
-        this.$store.dispatch('getInputData', this.inputData);
-        console.log(this.arry);
-      });
+      this.$store.dispatch('nextMonth');
+      this.$store.dispatch('getInputData');
+      this.$store.commit('createCalendar');
     },
   },
 }

@@ -51,3 +51,11 @@ body {
   margin-bottom: 30px;
 }
 </style>
+
+<script>
+export default {
+  created() {
+    this.$store.dispatch('getInputData');
+  }
+}
+</script>

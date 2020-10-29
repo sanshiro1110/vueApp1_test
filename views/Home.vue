@@ -120,49 +120,6 @@ export default {
       this.inputData.diary = "";
     }
   },
-  created() {
-    const db = firebase.firestore();
-    const today = new Date();
-    const inputData = {
-      year: today.getFullYear(),
-      month: today.getMonth() + 1,
-      date: today.getDate(),
-      monthTotal: 0,
-      categoryPayments: {
-        food: 0,
-        daily: 0,
-        cosme: 0,
-        entertainment: 0,
-        transportation: 0,
-        others: 0
-      }
-    }
-
-    db.collection('total')
-    .where("month", "==", inputData.month)
-    .orderBy("date", "desc")
-    .get()
-    .then(querySnapshot => {
-      querySnapshot.forEach(function(doc) {
-        inputData.monthTotal += doc.data().payment;
-        if(doc.data().category == "食費") {
-          inputData.categoryPayments.food += doc.data().payment;
-        } else if(doc.data().category == "日用品") {
-          inputData.categoryPayments.daily += doc.data().payment;
-        } else if(doc.data().category == "美容品") {
-          inputData.categoryPayments.cosme += doc.data().payment;
-        } else if(doc.data().category == "交際費") {
-          inputData.categoryPayments.entertainment += doc.data().payment;
-        } else if(doc.data().category == "交通費") {
-          inputData.categoryPayments.transportation += doc.data().payment;
-        } else if(doc.data().category == "その他") {
-          inputData.categoryPayments.others += doc.data().payment;
-        }
-      });
-
-      this.$store.dispatch('getInputData', inputData);
-    });
-  }
 }
 </script>
 <style scoped>
