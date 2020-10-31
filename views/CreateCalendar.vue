@@ -1,6 +1,22 @@
 <template>
   <div>
     <div class="modal">
+      <div class="modal-container">
+        <div class="modal-date">
+          <h3>
+            {{ monthGet }}月{{ dateGet }}日: 500円
+            <span>(食費: 500円)</span>
+          </h3>
+        </div>
+        <div class="modal-changePaymentData">
+          <p>支出額の変更</p>
+          <input type="number">円
+          <br>
+          <button>決定</button>
+          <br>
+          <button>削除</button>
+        </div>
+      </div>
     </div>
     <table class="calendar">
       <thead>
@@ -85,11 +101,19 @@ export default {
     },
     listGet() {
       return this.$store.state.inputData.list;
-    }
+    },
+
   },
   mounted() {
     this.$store.dispatch('createCalendar');
-    this.$store.dispatch('renderCalendarPayment');
+    this.$store.dispatch('getInputData');
+
+    const tds = document.querySelectorAll('tbody tr td');
+    tds.forEach(td => {
+      td.addEventListener('click', () => {
+        this.$store.dispatch('changeSavedData', parseInt(td.firstElementChild.textContent));
+      });
+    });
   },
   methods: {
     prevMonth() {

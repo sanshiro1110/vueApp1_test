@@ -26,11 +26,11 @@ export default new Vuex.Store({
         others: 0
       }
     },
+    dateList: [],
   },
   mutations: {
     getInputData(state, newData) {
       state.inputData = newData;
-      console.log('3番目');
     },
     prevMonth(state) {
       state.inputData.month -= 1;
@@ -38,7 +38,6 @@ export default new Vuex.Store({
         state.inputData.month = 12;
         state.inputData.year -= 1;
       }
-      console.log('1番目');
     },
     nextMonth(state) {
       state.inputData.month += 1;
@@ -46,7 +45,6 @@ export default new Vuex.Store({
         state.inputData.month = 1;
         state.inputData.year += 1;
       }
-      console.log('1番目');
     },
     createCalendar(state) {
       let year = state.inputData.year;
@@ -127,23 +125,29 @@ export default new Vuex.Store({
             week.forEach(date => {
               const td = document.createElement('td');
               td.classList.add('td');
-              td.textContent = date.date;
-              td.style.textAlign = 'center';
+              const div = document.createElement('div');
+              td.appendChild(div);
+              div.textContent = date.date;
+              div.style.position = "absolute";
+              div.style.top = "3px";
+              div.style.left = "3px";
               if(date.isToday) {
                 td.classList.add('today');
               }
               if(date.isDisable){
                 td.classList.add('disabled');
               }
-              const div = document.createElement('div');
-              div.style.color = "#ff9966";
-              div.style.fontSize = "12px";
-              div.style.marginTop = "20px";
-              div.style.textAlign = "right";
+              const span = document.createElement('span');
+              span.style.color = "#ff9966";
+              span.style.fontSize = "12px";
+              span.style.display = "block";
+              span.style.position = "absolute";
+              span.style.bottom = "0px";
+              span.style.right = "3px";
               if(!date.isDisable) {
-                div.classList.add(date.date);
+                span.classList.add(date.date);
               }
-              td.appendChild(div);
+              td.appendChild(span);
               tr.appendChild(td);
             });
             document.querySelector('tbody').appendChild(tr);
@@ -169,8 +173,7 @@ export default new Vuex.Store({
             td.style.border = "1px solid black";
             td.style.width = "calc(500px / 7)";
             td.style.height = "50px";
-            td.style.textAlign = "left";
-            td.style.padding = "0px 5px 5px 5px";
+            td.style.position = "relative";
           })
         }
 
@@ -180,25 +183,26 @@ export default new Vuex.Store({
         calendarBodyStyle();
       }
       createCalendar();
-      console.log('2番目');
     },
     renderCalendarPayment(state) {
       const arry = state.inputData.list;
-      const divArry = document.querySelectorAll('.td div');
-      divArry.forEach(div => {
+      const spanArry = document.querySelectorAll('.td span');
+      spanArry.forEach(span => {
         let total = 0;
         arry.forEach(ary => {
-          if(ary.date == div.className) {
+          if(ary.date == span.className) {
             total+= ary.payment;
           }
         });
         if(total === 0) {
-          div.textContent = "";
+          span.textContent = "";
         } else{
-          div.textContent = total;
+          span.textContent = total;
         }
       });
-      console.log('4番目');
+    },
+    changeSavedData(state, dateList) {
+      state.dateList = dateList;
     }
   },
   actions: {
@@ -248,22 +252,18 @@ export default new Vuex.Store({
           }
         });
         context.commit('getInputData', newData);
+        context.dispatch('renderCalendarPayment');
       });
     },
     prevMonth(context, number) {
-      async function hoge() {
-        context.commit('prevMonth', number);
-        context.dispatch('createCalendar');
-        await context.dispatch('getInputData');
-      }
-      hoge();
-      context.dispatch('renderCalendarPayment');
+      context.commit('prevMonth', number);
+      context.dispatch('createCalendar');
+      context.dispatch('getInputData');
     },
-    async nextMonth(context, number) {
+    nextMonth(context, number) {
       context.commit('nextMonth', number);
       context.dispatch('createCalendar');
-      await context.dispatch('getInputData');
-      context.dispatch('renderCalendarPayment');
+      context.dispatch('getInputData');
     },
     createCalendar(context) {
       context.commit('createCalendar');
@@ -271,6 +271,22 @@ export default new Vuex.Store({
     renderCalendarPayment(context) {
       context.commit('renderCalendarPayment');
     },
+    changeSavedData(context, clickDate) {
+      const dateList = [];
+      const db = firebase.firestore();
+      db.collection('total')
+      .where("date", "==", clickDate)
+      .orderBy("date", "desc")
+      .get()
+      .then(querySnapshot => {
+        querySnapshot.forEach(function(doc) {
+          dateList.push({
+            ...doc.data()
+          });
+        });
+        context.commit('changeSavedData', dateList);
+      });
+    }
   },
   plugins: [createPersistedState({storage: window.localStorage})],
 });
