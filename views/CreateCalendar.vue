@@ -88,8 +88,8 @@ export default {
     }
   },
   mounted() {
-    this.$store.commit('createCalendar');
-    this.$store.commit('renderCalendarPayment');
+    this.$store.dispatch('createCalendar');
+    this.$store.dispatch('renderCalendarPayment');
   },
   methods: {
     prevMonth() {

@@ -165,13 +165,9 @@ export default {
     },
     prevMonth() {
       this.$store.dispatch('prevMonth');
-      this.$store.dispatch('getInputData');
-      this.$store.commit('createCalendar');
     },
     nextMonth() {
       this.$store.dispatch('nextMonth');
-      this.$store.dispatch('getInputData');
-      this.$store.commit('createCalendar');
     },
   },
 }

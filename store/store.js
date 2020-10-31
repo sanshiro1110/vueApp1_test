@@ -250,10 +250,13 @@ export default new Vuex.Store({
         context.commit('getInputData', newData);
       });
     },
-    async prevMonth(context, number) {
-      context.commit('prevMonth', number);
-      context.dispatch('createCalendar');
-      await context.dispatch('getInputData');
+    prevMonth(context, number) {
+      async function hoge() {
+        context.commit('prevMonth', number);
+        context.dispatch('createCalendar');
+        await context.dispatch('getInputData');
+      }
+      hoge();
       context.dispatch('renderCalendarPayment');
     },
     async nextMonth(context, number) {
