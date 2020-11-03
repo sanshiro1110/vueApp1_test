@@ -55,6 +55,7 @@ body {
 <script>
 export default {
   created() {
+    this.$store.dispatch('clearData');
     this.$store.dispatch('getInputData');
   }
 }

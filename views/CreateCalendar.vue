@@ -1,21 +1,20 @@
 <template>
   <div>
     <div class="modal">
-      <div class="modal-container">
-        <div class="modal-date">
-          <h3>
-            {{ monthGet }}月{{ dateGet }}日: 500円
-            <span>(食費: 500円)</span>
-          </h3>
-        </div>
-        <div class="modal-changePaymentData">
-          <p>支出額の変更</p>
-          <input type="number">円
-          <br>
-          <button>決定</button>
-          <br>
-          <button>削除</button>
-        </div>
+      <div class="modal-date">
+        <h3>
+          {{ monthGet }}月{{ dateGet }}日: 500円
+          <span>(食費: 500円)</span>
+        </h3>
+      </div>
+      <div class="modal-changePaymentData">
+        <h3>支出額の変更</h3>
+        <font-awesome-icon class="modal-close" @click="modalClose" :icon="['fas', 'times-circle']"/>
+        <input type="number">円
+        <br>
+        <button>決定</button>
+        <br>
+        <button class="data-delete">この項目を削除</button>
       </div>
     </div>
     <table class="calendar">
@@ -84,7 +83,48 @@ tfoot tr td {
 .calendar {
   width: 500px;
   margin: 0 auto;
+  position: relative;
+  z-index: 10;
 }
+
+
+.modal {
+  transition: all .3s ease;
+  transform: scale(0) translateX(-50%);
+  opacity: 0;
+  position: absolute;
+  top: 150px;
+  left: 50%;
+  z-index: 20;
+  width: 600px;
+  border: 2px solid #777;
+  border-radius: 5px;
+  box-shadow: 3px 3px 2px #777;
+  background-color: #fff;
+}
+
+.modal.visible {
+  transform: scale(1) translateX(-50%);
+  opacity: 1;
+}
+
+.modal-changePaymentData button {
+  margin-top: 20px;
+}
+
+.data-delete {
+  margin-bottom: 20px;
+}
+
+.modal-close {
+  font-size: 25px;
+  color: #777;
+  cursor: pointer;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
 </style>
 
 <script>
@@ -102,18 +142,13 @@ export default {
     listGet() {
       return this.$store.state.inputData.list;
     },
-
+    dateListGet() {
+      return this.$store.state.dateList;
+    }
   },
   mounted() {
     this.$store.dispatch('createCalendar');
     this.$store.dispatch('getInputData');
-
-    const tds = document.querySelectorAll('tbody tr td');
-    tds.forEach(td => {
-      td.addEventListener('click', () => {
-        this.$store.dispatch('changeSavedData', parseInt(td.firstElementChild.textContent));
-      });
-    });
   },
   methods: {
     prevMonth() {
@@ -121,6 +156,10 @@ export default {
     },
     nextMonth() {
       this.$store.dispatch('nextMonth');
+    },
+    modalClose() {
+      const modal = document.querySelector('.modal');
+      modal.classList.remove('visible');
     }
   },
 }

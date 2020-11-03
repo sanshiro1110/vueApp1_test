@@ -12,7 +12,7 @@ export default new Vuex.Store({
   state: {
     inputData: {
       year: today.getFullYear(),
-      month: today.getMonth(),
+      month: today.getMonth() + 1,
       date: today.getDate(),
       monthTotal: 0,
       number: 0,
@@ -174,6 +174,7 @@ export default new Vuex.Store({
             td.style.width = "calc(500px / 7)";
             td.style.height = "50px";
             td.style.position = "relative";
+            td.style.cursor = "pointer";
           })
         }
 
@@ -203,9 +204,31 @@ export default new Vuex.Store({
     },
     changeSavedData(state, dateList) {
       state.dateList = dateList;
+    },
+    clearData(state, initializedData) {
+      state.inputData = initializedData;
     }
   },
   actions: {
+    clearData(context) {
+      const initializedData = {
+        year: today.getFullYear(),
+        month: today.getMonth() + 1,
+        date: today.getDate(),
+        monthTotal: 0,
+        number: 0,
+        list: [],
+        categoryPayments: {
+          food: 0,
+          daily: 0,
+          cosme: 0,
+          entertainment: 0,
+          transportation: 0,
+          others: 0
+        }
+      }
+      context.commit('clearData', initializedData);
+    },
     getInputData(context) {
       const newData = {
         year: context.state.inputData.year,
@@ -272,11 +295,11 @@ export default new Vuex.Store({
       context.commit('renderCalendarPayment');
     },
     changeSavedData(context, clickDate) {
-      const dateList = [];
+      let dateList = [];
       const db = firebase.firestore();
       db.collection('total')
       .where("date", "==", clickDate)
-      .orderBy("date", "desc")
+      // .orderBy("payment", "desc")
       .get()
       .then(querySnapshot => {
         querySnapshot.forEach(function(doc) {
@@ -285,6 +308,9 @@ export default new Vuex.Store({
           });
         });
         context.commit('changeSavedData', dateList);
+      })
+      .catch(error => {
+        console.log(error);
       });
     }
   },

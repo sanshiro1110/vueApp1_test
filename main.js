@@ -5,6 +5,13 @@ import * as firebase from 'firebase';
 import Chartkick from 'vue-chartkick';
 import Chart from 'chart.js';
 import store from './store/store';
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { fas } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
+library.add(fas);
+
+Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 const firebaseConfig = {
   apiKey: "AIzaSyAS5O9-MoyhNJiy1xhbujIEcAsokXPWIOY",
