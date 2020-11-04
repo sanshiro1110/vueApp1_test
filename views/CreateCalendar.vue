@@ -3,18 +3,27 @@
     <div class="modal">
       <div class="modal-date">
         <h3>
-          {{ monthGet }}月{{ dateGet }}日: 500円
-          <span>(食費: 500円)</span>
+          {{ inputData.month }}月{{ inputData.date }}日 {{ dateTotalGet }}円
+          (
+            <span v-for="(list, index) in dateListGet" :key="index">
+              {{ list.category }}: {{ list.payment }}円
+            </span>
+          )
         </h3>
       </div>
       <div class="modal-changePaymentData">
-        <h3>支出額の変更</h3>
+        <h3>支出額の追加</h3>
         <font-awesome-icon class="modal-close" @click="modalClose" :icon="['fas', 'times-circle']"/>
-        <input type="number">円
+        <select class="category" v-model="inputData.category">
+          <option v-for="category in categories" :key="category">
+            {{ category }}
+          </option>
+        </select>
+        <p>{{ inputData.category }}</p>
+        <p>{{ inputData.payment }}</p>
+        <input type="number" v-model="inputData.payment">円
         <br>
-        <button>決定</button>
-        <br>
-        <button class="data-delete">この項目を削除</button>
+        <button class="save" @click="dataRequest">追加</button>
       </div>
     </div>
     <table class="calendar">
@@ -125,10 +134,41 @@ tfoot tr td {
   right: 10px;
 }
 
+.modal-default {
+  display: none;
+}
+
+.category {
+  display: block;
+  width: 50px;
+  margin: 0 auto 15px;
+}
+
+.save {
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
 </style>
 
 <script>
+import * as firebase from 'firebase';
+
+const today = new Date();
 export default {
+  data() {
+    return {
+      inputData: {
+        year: today.getFullYear(),
+        month: today.getMonth() + 1,
+        date: today.getDate(),
+        category: "食費",
+        payment: 0,
+        diary: "",
+      },
+      categories: ["食費", "日用品", "美容品", "交際費", "交通費", "その他"],
+    }
+  },
   computed: {
     yearGet() {
       return this.$store.state.inputData.year;
@@ -143,23 +183,75 @@ export default {
       return this.$store.state.inputData.list;
     },
     dateListGet() {
-      return this.$store.state.dateList;
-    }
+      return this.$store.state.changeData.dateList;
+    },
+    dateTotalGet() {
+      return this.$store.state.changeData.dateTotal;
+    },
   },
   mounted() {
     this.$store.dispatch('createCalendar');
     this.$store.dispatch('getInputData');
+    const tds = document.querySelectorAll('tbody tr td');
+    tds.forEach(td => {
+      td.addEventListener('click', () => {
+        this.$store.dispatch('changeSavedData', parseInt(td.firstElementChild.textContent));
+        this.inputData.year = this.$store.state.year;
+        this.inputData.month = this.$store.state.month;
+        this.inputData.date = td.firstElementChild.textContent;
+        const modal = document.querySelector('.modal');
+        modal.classList.add('visible');
+      });
+    });
   },
   methods: {
     prevMonth() {
       this.$store.dispatch('prevMonth');
+      const tds = document.querySelectorAll('tbody tr td');
+      tds.forEach(td => {
+        td.addEventListener('click', () => {
+          this.$store.dispatch('changeSavedData', parseInt(td.firstElementChild.textContent));
+          this.inputData.month = this.$store.state.month;
+          this.inputData.date = td.firstElementChild.textContent;
+          const modal = document.querySelector('.modal');
+          modal.classList.add('visible');
+        });
+      });
     },
     nextMonth() {
       this.$store.dispatch('nextMonth');
+      const tds = document.querySelectorAll('tbody tr td');
+      tds.forEach(td => {
+        td.addEventListener('click', () => {
+          this.$store.dispatch('changeSavedData', parseInt(td.firstElementChild.textContent));
+          this.inputData.month = this.$store.state.month;
+          this.inputData.date = td.firstElementChild.textContent;
+          const modal = document.querySelector('.modal');
+          modal.classList.add('visible');
+        });
+      });
     },
     modalClose() {
       const modal = document.querySelector('.modal');
       modal.classList.remove('visible');
+    },
+    dataRequest() {
+      if(this.inputData.payment == 0) {
+        alert('※支出額が0円です');
+      }
+      if(this.inputData.payment !== 0) {
+        alert('保存されました');
+        //日付が同じだった場合は金額を追加して更新したい
+        const db = firebase.firestore();
+        db.collection('total').add({
+          year: this.inputData.year,
+          month: this.inputData.month,
+          date: this.inputData.date,
+          category: this.inputData.category,
+          payment: parseInt(this.inputData.payment),
+          diary: this.inputData.diary,
+        });
+      }
     }
   },
 }

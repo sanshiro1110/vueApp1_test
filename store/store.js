@@ -26,7 +26,15 @@ export default new Vuex.Store({
         others: 0
       }
     },
-    dateList: [],
+    changeData: {
+      dateList: [{
+        month: 1,
+        date: 1,
+        category: "食費",
+        payment: 0,
+      }],
+      dateTotal: 0,
+    }
   },
   mutations: {
     getInputData(state, newData) {
@@ -202,11 +210,21 @@ export default new Vuex.Store({
         }
       });
     },
-    changeSavedData(state, dateList) {
-      state.dateList = dateList;
+    changeSavedData(state, changeData) {
+      state.changeData = changeData;
     },
     clearData(state, initializedData) {
       state.inputData = initializedData;
+    },
+    deleteList(state, index) {
+      state.inputData.list.splice(index, 1);
+      // const db = firebase.firestore();
+      // db.collection('total')
+      // .where("deleteId", "==", index)
+      // .delete()
+      // .then(function() {
+      //   console.log('削除できました');
+      // })
     }
   },
   actions: {
@@ -295,7 +313,10 @@ export default new Vuex.Store({
       context.commit('renderCalendarPayment');
     },
     changeSavedData(context, clickDate) {
-      let dateList = [];
+      let changeData = {
+        dateList: [],
+        dateTotal: 0,
+      }
       const db = firebase.firestore();
       db.collection('total')
       .where("date", "==", clickDate)
@@ -303,15 +324,19 @@ export default new Vuex.Store({
       .get()
       .then(querySnapshot => {
         querySnapshot.forEach(function(doc) {
-          dateList.push({
+          changeData.dateList.push({
             ...doc.data()
           });
+          changeData.dateTotal += doc.data().payment;
         });
-        context.commit('changeSavedData', dateList);
+        context.commit('changeSavedData', changeData);
       })
       .catch(error => {
         console.log(error);
       });
+    },
+    deleteList(context, index) {
+      context.commit('deleteList', index);
     }
   },
   plugins: [createPersistedState({storage: window.localStorage})],

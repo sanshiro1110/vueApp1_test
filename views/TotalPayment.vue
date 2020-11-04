@@ -31,7 +31,7 @@
     </ul>
     <hr>
     <div v-for="(ary, index) in listGet" :key="ary.id" class="datePaymentList">
-      <ul class="totalPayment" id="totalPaymentList">
+      <ul class="totalPayment">
         <li>{{ ary.month }}月{{ ary.date}}日</li>
         <li>{{ ary.payment}}円</li>
       </ul>
@@ -160,14 +160,30 @@ export default {
   methods: {
     deleteList(index) {
       if(confirm("本当に削除しますか")) {
-        this.arry.splice(index, 1);
+        this.$store.dispatch('deleteList', index);
       }
     },
     prevMonth() {
       this.$store.dispatch('prevMonth');
+      const tds = document.querySelectorAll('tbody tr td');
+      tds.forEach(td => {
+        td.addEventListener('click', () => {
+          this.$store.dispatch('changeSavedData', parseInt(td.firstElementChild.textContent));
+          const modal = document.querySelector('.modal');
+          modal.classList.add('visible');
+        });
+      });
     },
     nextMonth() {
       this.$store.dispatch('nextMonth');
+      const tds = document.querySelectorAll('tbody tr td');
+      tds.forEach(td => {
+        td.addEventListener('click', () => {
+          this.$store.dispatch('changeSavedData', parseInt(td.firstElementChild.textContent));
+          const modal = document.querySelector('.modal');
+          modal.classList.add('visible');
+        });
+      });
     },
   },
 }

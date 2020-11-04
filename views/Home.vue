@@ -22,11 +22,11 @@
       <span>円</span>
       <hr>
 
-      <h3>日記</h3>
+      <h3>メモ</h3>
       <textarea name="diary" id="" cols="50" rows="10" v-model="inputData.diary"></textarea>
     </div>
     <div class="buttonArea">
-      <button @click="dataRequest">記録する</button>
+      <button class="save" @click="dataRequest">記録する</button>
     </div>
   </div>
 </template>
@@ -46,6 +46,7 @@ export default {
         category: "食費",
         payment: 0,
         diary: "",
+        id: 0,
       },
       categories: ["食費", "日用品", "美容品", "交際費", "交通費", "その他"],
     }
@@ -100,24 +101,22 @@ export default {
       }
     },
     dataRequest() {
-      alert('保存されました');
-      //日付が同じだった場合は金額を追加して更新したい
-      const db = firebase.firestore();
-      db.collection('total').add({
-        year: this.inputData.year,
-        month: this.inputData.month,
-        date: this.inputData.date,
-        category: this.inputData.category,
-        payment: parseInt(this.inputData.payment),
-        diary: this.inputData.diary
-      })
-      // .then(function(docRef) {
-      //   console.log(docRef);
-      // });
-
-      this.inputData.category = "食費";
-      this.inputData.payment = 0;
-      this.inputData.diary = "";
+      if(this.inputData.payment == 0) {
+        alert('※支出額が0円です');
+      }
+      if(this.inputData.payment !== 0) {
+        alert('保存されました');
+        //日付が同じだった場合は金額を追加して更新したい
+        const db = firebase.firestore();
+        db.collection('total').add({
+          year: this.inputData.year,
+          month: this.inputData.month,
+          date: this.inputData.date,
+          category: this.inputData.category,
+          payment: parseInt(this.inputData.payment),
+          diary: this.inputData.diary,
+        });
+      }
     }
   },
 }
@@ -132,5 +131,9 @@ export default {
 
   .buttonArea {
     margin-top: 20px;
+  }
+
+  .save {
+    cursor: pointer;
   }
 </style>

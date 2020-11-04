@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div class="routerLink">
+    <div class="router-link">
       <router-link to="./" class="navLink">入力</router-link>
       <router-link to="./calendar" class="navLink">カレンダー</router-link>
       <router-link to="./report" class="navLink">レポート</router-link>
@@ -16,7 +16,9 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 30px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: bold;
 }
 
 .container {
@@ -42,18 +44,22 @@
   font-size: 15px;
 }
 
-body {
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-}
-
-.routerLink {
+.router-link {
   margin-bottom: 30px;
+  padding-top: 30px;
 }
 </style>
 
 <script>
 export default {
+  computed: {
+    dateListGet() {
+      return this.$store.state.changeData.dateList;
+    },
+    dateTotalGet() {
+      return this.$store.state.changeData.dateTotal;
+    },
+  },
   created() {
     this.$store.dispatch('clearData');
     this.$store.dispatch('getInputData');
